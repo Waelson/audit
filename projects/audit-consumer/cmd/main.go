@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/codenotary/immudb/pkg/api/schema"
 	"log"
 	"os"
 	"os/signal"
@@ -49,15 +50,23 @@ func main() {
 	log.Printf("Configuração do Kafka - Brokers: %s, Tópico: %s, Grupo: %s", kafkaBrokers, kafkaTopic, kafkaGroup)
 	log.Printf("Configuração do ImmuDB - Host: %s, Porta: %d", immuHost, immuPort)
 
+	// Inicializa o cliente ImmuDB
+	immuClient := initializeImmuDB(immuHost, immuPort, immuUser, immuPassword)
+
+	// Cria o banco de dados e tabela automaticamente
+	if err := createDatabaseAndTable(immuClient, "payments_db"); err != nil {
+		log.Fatalf("Erro ao configurar o banco de dados e tabela: %v", err)
+	}
+
+	log.Println("Inicializando o consumidor Kafka...")
+	consumer := &KafkaConsumer{
+		immuClient: immuClient,
+	}
+
 	// Configuração do Kafka
 	config := sarama.NewConfig()
 	config.Consumer.Group.Rebalance.Strategy = sarama.BalanceStrategyRoundRobin
 	config.Version = sarama.V2_6_0_0
-
-	log.Println("Inicializando o cliente ImmuDB...")
-	consumer := &KafkaConsumer{
-		immuClient: initializeImmuDB(immuHost, immuPort, immuUser, immuPassword), // Inicializa o cliente ImmuDB
-	}
 
 	for {
 		log.Println("Conectando ao Kafka...")
@@ -146,19 +155,62 @@ func (kc *KafkaConsumer) ConsumeClaim(sess sarama.ConsumerGroupSession, claim sa
 // insertIntoImmuDB insere um registro no ImmuDB
 func (kc *KafkaConsumer) insertIntoImmuDB(payment Payment) error {
 	log.Printf("Preparando para inserir no ImmuDB: OrderNumber=%s", payment.OrderNumber)
-	// Converte o registro em JSON
-	data, err := json.Marshal(payment)
+	query := `
+		INSERT INTO payments (date_transaction, event)
+		VALUES (NOW(), @event);
+	`
+
+	eventData, err := json.Marshal(payment)
 	if err != nil {
-		return fmt.Errorf("erro ao converter registro para JSON: %w", err)
+		return fmt.Errorf("erro ao converter evento para JSON: %w", err)
 	}
 
-	// Insere no ImmuDB como chave-valor
-	_, err = kc.immuClient.Set(context.Background(), []byte(payment.OrderNumber), data)
+	params := map[string]interface{}{
+		"event": string(eventData),
+	}
+
+	_, err = kc.immuClient.SQLExec(context.Background(), query, params)
 	if err != nil {
-		return fmt.Errorf("erro ao inserir no ImmuDB: %w", err)
+		return fmt.Errorf("erro ao inserir evento no ImmuDB: %w", err)
 	}
 
 	log.Printf("Inserção no ImmuDB concluída: OrderNumber=%s", payment.OrderNumber)
+	return nil
+}
+
+// createDatabaseAndTable cria o banco de dados e tabela se ainda não existirem
+func createDatabaseAndTable(immuClient client.ImmuClient, dbName string) error {
+	log.Printf("Criando banco de dados '%s' e tabela 'payments', se não existirem...", dbName)
+
+	// Cria o banco de dados, se não existir
+	_, err := immuClient.CreateDatabaseV2(context.Background(), dbName, nil)
+	if err != nil {
+		if err.Error() != "database already exists" {
+			return fmt.Errorf("erro ao criar banco de dados: %w", err)
+		}
+	}
+
+	// Usa o banco de dados criado
+	_, err = immuClient.UseDatabase(context.Background(), &schema.Database{DatabaseName: dbName})
+	if err != nil {
+		return fmt.Errorf("erro ao usar banco de dados '%s': %w", dbName, err)
+	}
+
+	// Cria a tabela 'payments', se não existir
+	query := `
+		CREATE TABLE IF NOT EXISTS payments (
+			id INTEGER AUTO_INCREMENT,
+			date_transaction TIMESTAMP,
+			event JSON,
+			PRIMARY KEY (id)
+		);
+	`
+	_, err = immuClient.SQLExec(context.Background(), query, nil)
+	if err != nil {
+		return fmt.Errorf("erro ao criar tabela no ImmuDB: %w", err)
+	}
+
+	log.Println("Banco de dados e tabela configurados com sucesso.")
 	return nil
 }
 
