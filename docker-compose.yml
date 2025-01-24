@@ -106,6 +106,19 @@ services:
     networks:
       - payment-network
 
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: kafka-ui
+    ports:
+      - "7070:8080" # Porta da interface web
+    environment:
+      KAFKA_CLUSTERS_0_NAME: "local"
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: "kafka:9092" # Altere conforme seu Kafka
+    depends_on:
+      - kafka
+    networks:
+      - payment-network
+
 
 networks:
   payment-network:
