@@ -1,0 +1,115 @@
+version: '3.9'
+
+services:
+
+  payment-ui:
+    build:
+      context: ./projects/payment-ui
+      dockerfile: Dockerfile
+    container_name: payment-ui
+    ports:
+      - "3000:80"
+    depends_on:
+      - payment-api
+    networks:
+      - payment-network
+
+  payment-api:
+    container_name: payment-api
+    build:
+      context: ./projects/payment-api
+      dockerfile: Dockerfile
+    ports:
+      - '8080:8080'
+    depends_on:
+      - postgres
+    environment:
+      POSTGRES_HOST: "postgres"
+      POSTGRES_PORT: "5432"
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "password"
+      POSTGRES_DB: "payment_db"
+      POSTGRES_SSLMODE: "disable"
+    networks:
+      - payment-network
+
+  postgres:
+    image: postgres:15
+    container_name: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: payment_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./projects/payment-api/init.sql:/docker-entrypoint-initdb.d/init.sql
+    command: >
+      postgres -c wal_level=logical
+             -c max_replication_slots=10
+             -c max_wal_senders=10
+             -c wal_keep_size=64
+    networks:
+      - payment-network
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+    networks:
+      - payment-network
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: kafka
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+    ports:
+      - "9092:9092"
+    networks:
+      - payment-network
+
+  debezium:
+    image: debezium/connect:1.4
+    container_name: debezium
+    depends_on:
+      - kafka
+      - postgres
+    environment:
+      BOOTSTRAP_SERVERS: kafka:9092
+      GROUP_ID: 1
+      CONFIG_STORAGE_TOPIC: debezium_config
+      OFFSET_STORAGE_TOPIC: debezium_offsets
+      STATUS_STORAGE_TOPIC: debezium_status
+      CONNECT_KEY_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      CONNECT_VALUE_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      CONNECT_VALUE_CONVERTER_SCHEMAS_ENABLE: false
+      CONNECT_KEY_CONVERTER_SCHEMAS_ENABLE: false
+      CONNECT_REST_ADVERTISED_HOST_NAME: debezium
+      CONNECT_REST_PORT: 8083
+      CONNECT_PLUGIN_PATH: /kafka/connect
+    ports:
+      - "8083:8083"
+    networks:
+      - payment-network
+
+
+networks:
+  payment-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
