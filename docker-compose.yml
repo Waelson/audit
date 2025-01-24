@@ -33,6 +33,25 @@ services:
     networks:
       - payment-network
 
+  audit-consumer:
+    container_name: audit-consumer
+    build:
+      context: ./projects/audit-consumer
+      dockerfile: Dockerfile
+    depends_on:
+      - kafka
+      - immudb
+    environment:
+      KAFKA_BROKERS: "kafka:9092"
+      KAFKA_TOPIC: "event.public.payments"
+      KAFKA_CONSUMER_GROUP: "payment-consumer-group"
+      IMMUD_HOST: "immudb"
+      IMMUD_PORT: 3322
+      IMMUD_USER: "immudb"
+      IMMUD_PASSWORD: "immudb"
+    networks:
+      - payment-network
+
   postgres:
     image: postgres:15
     container_name: postgres
@@ -44,7 +63,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data_01:/var/lib/postgresql/data
       - ./projects/payment-api/init.sql:/docker-entrypoint-initdb.d/init.sql
     command: >
       postgres -c wal_level=logical
@@ -83,7 +102,7 @@ services:
       - payment-network
 
   debezium:
-    image: debezium/connect:1.4
+    image: debezium/connect:2.7.3.Final
     container_name: debezium
     depends_on:
       - kafka
@@ -101,6 +120,8 @@ services:
       CONNECT_REST_ADVERTISED_HOST_NAME: debezium
       CONNECT_REST_PORT: 8083
       CONNECT_PLUGIN_PATH: /kafka/connect
+      LOGGING_LEVEL_ROOT: DEBUG
+      LOGGING_LEVEL_IO_DEBEZIUM: DEBUG
     ports:
       - "8083:8083"
     networks:
@@ -120,9 +141,36 @@ services:
       - payment-network
 
 
+  immudb:
+    image: codenotary/immudb:latest
+    container_name: immudb
+    ports:
+      - "3322:3322"
+      - "8081:8080"
+    environment:
+      IMMUDB_USER: immudb
+      IMMUDB_PASSWORD: immudb
+    networks:
+      - payment-network
+
+#  immugw:
+#    image: codenotary/immugw:latest
+#    container_name: immugw
+#    depends_on:
+#      - immudb
+#    ports:
+#      - "3323:3323"
+#    environment:
+#      IMMUDB_ADDRESS: immudb
+#      IMMUDB_PORT: 3322
+#      IMMUGW_IMMUDB_ADDRESS: immudb
+#      IMMUGW_IMMUDB_PORT: 3322
+#    networks:
+#      - payment-network
+
 networks:
   payment-network:
     driver: bridge
 
 volumes:
-  postgres_data:
+  postgres_data_01:

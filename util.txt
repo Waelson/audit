@@ -1,0 +1,29 @@
+psql -h localhost -p 5432  -U postgres -d payment_db
+
+docker exec kafka kafka-console-consumer --bootstrap-server kafka:9092 --topic payment-postgres.public.payments --from-beginning
+
+curl -X DELETE http://localhost:8083/connectors/postgres-connector
+
+curl --location 'http://localhost:8083/connectors' \
+--header 'Content-Type: application/json' \
+--data '{
+  "name": "postgres-connector",
+  "config": {
+    "connector.class": "io.debezium.connector.postgresql.PostgresConnector",
+    "database.hostname": "postgres",
+    "database.port": "5432",
+    "database.user": "postgres",
+    "database.password": "password",
+    "database.dbname": "payment_db",
+    "database.server.name": "payment-postgres",
+    "slot.name": "debezium_slot",
+    "plugin.name": "pgoutput",
+    "publication.name": "audit_changes",
+    "database.history.kafka.bootstrap.servers": "kafka:9092",
+    "database.history.kafka.topic": "schema-changes.payment-postgres",
+    "topic.prefix": "event",
+    "column.propagate.source.type": "true",
+    "decimal.handling.mode": "string"
+  }
+}
+'
