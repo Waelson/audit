@@ -82,7 +82,7 @@ func (db *ImmuDBClient) QueryAuditTrail(ctx context.Context, params map[string]i
 		SELECT application, db_name, db_schema, db_table, event_operation, event_date, event 
 		FROM audit_trail 
 		SINCE @start_date UNTIL @end_date
-		WHERE application = @application AND db_name = @db_name AND db_schema = @db_schema AND db_table = @db_table;
+		WHERE application = @application AND db_name = @db_name AND db_schema = @db_schema AND db_table = @db_table AND event_operation = @event_operation;
 	`
 
 	sqlResult, err := db.client.SQLQuery(ctx, query, params, false)
@@ -192,23 +192,25 @@ func queryAuditTrailHandler(db *ImmuDBClient) http.HandlerFunc {
 		dbTable := r.URL.Query().Get("db_table")
 		startDate := r.URL.Query().Get("start_date")
 		endDate := r.URL.Query().Get("end_date")
+		eventOperation := strings.ToLower(r.URL.Query().Get("event_operation"))
 
 		startDate = strings.ReplaceAll(startDate, "T", " ") + ":00"
 		endDate = strings.ReplaceAll(endDate, "T", " ") + ":00"
 
-		if application == "" || dbName == "" || dbSchema == "" || dbTable == "" || startDate == "" || endDate == "" {
+		if application == "" || dbName == "" || dbSchema == "" || dbTable == "" || startDate == "" || endDate == "" || eventOperation == "" {
 			log.Println("Parâmetros de consulta ausentes na solicitação.")
 			http.Error(w, "Missing required query parameters", http.StatusBadRequest)
 			return
 		}
 
 		params := map[string]interface{}{
-			"application": application,
-			"db_name":     dbName,
-			"db_schema":   dbSchema,
-			"db_table":    dbTable,
-			"start_date":  startDate,
-			"end_date":    endDate,
+			"application":     application,
+			"db_name":         dbName,
+			"db_schema":       dbSchema,
+			"db_table":        dbTable,
+			"start_date":      startDate,
+			"end_date":        endDate,
+			"event_operation": eventOperation,
 		}
 
 		rows, err := db.QueryAuditTrail(ctx, params)

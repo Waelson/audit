@@ -74,11 +74,24 @@ const App = () => {
     setExpandedRow(expandedRow === index ? null : index);
   };
 
+  const getOperationLabel = (operation) => {
+    switch (operation) {
+      case "c":
+        return "Create";
+      case "u":
+        return "Update";
+      case "d":
+        return "Delete";
+      default:
+        return operation; // Retorna o valor original caso não seja "C", "U" ou "D"
+    }
+  };
+
   const styles = {
     container: {
       fontFamily: "Arial, sans-serif",
       padding: "20px",
-      maxWidth: "900px",
+      maxWidth: "auto",
       margin: "0 auto",
     },
     header: {
@@ -305,7 +318,7 @@ const App = () => {
                         <td style={styles.td}>{result.dbName}</td>
                         <td style={styles.td}>{result.dbSchema}</td>
                         <td style={styles.td}>{result.dbTable}</td>
-                        <td style={styles.td}>{result.eventOperation}</td>
+                        <td style={styles.td}>{getOperationLabel(result.eventOperation)}</td>
                         <td style={styles.td}>{new Date(result.eventDate).toLocaleString()}</td>
                         <td style={styles.td}>View JSON</td>
                       </tr>
