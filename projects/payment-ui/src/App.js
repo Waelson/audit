@@ -72,7 +72,7 @@ const App = () => {
 
   return (
       <div className="payment-container">
-        <h1>Pay Invoice</h1>
+        <h1>Payment Simulator</h1>
         <form onSubmit={handleSubmit}>
           <div className="form-group">
             <label>Order Number</label>

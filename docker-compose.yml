@@ -33,6 +33,36 @@ services:
     networks:
       - payment-network
 
+  audit-ui:
+    build:
+      context: ./projects/audit-ui
+      dockerfile: Dockerfile
+    container_name: audit-ui
+    ports:
+      - "4000:80"
+    depends_on:
+      - audit-api
+    networks:
+      - payment-network
+
+  audit-api:
+    container_name: audit-api
+    build:
+      context: ./projects/audit-api
+      dockerfile: Dockerfile
+    ports:
+      - '5050:5050'
+    depends_on:
+      - immudb
+    environment:
+      IMMUD_HOST: "immudb"
+      IMMUD_PORT: 3322
+      IMMUD_USER: "immudb"
+      IMMUD_PASSWORD: "immudb"
+      IMMUD_DB: "audit_db"
+    networks:
+      - payment-network
+
   audit-consumer:
     container_name: audit-consumer
     build:
