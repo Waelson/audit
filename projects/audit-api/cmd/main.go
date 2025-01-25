@@ -9,6 +9,7 @@ import (
 	"github.com/codenotary/immudb/pkg/api/schema"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/codenotary/immudb/pkg/client"
@@ -93,6 +94,8 @@ func (db *ImmuDBClient) QueryAuditTrail(ctx context.Context, params map[string]i
 	log.Println("Consulta de audit trail executada com sucesso.")
 	response := make([]model.AuditTrail, 0)
 	for _, row := range sqlResult.Rows {
+		//event := strings.ReplaceAll(row.Values[6].GetS(), "\\", "")
+		//event = event[0:]
 		trail := model.AuditTrail{
 			Application:    row.Values[0].GetS(),
 			DbName:         row.Values[1].GetS(),
@@ -190,6 +193,9 @@ func queryAuditTrailHandler(db *ImmuDBClient) http.HandlerFunc {
 		startDate := r.URL.Query().Get("start_date")
 		endDate := r.URL.Query().Get("end_date")
 
+		startDate = strings.ReplaceAll(startDate, "T", " ") + ":00"
+		endDate = strings.ReplaceAll(endDate, "T", " ") + ":00"
+
 		if application == "" || dbName == "" || dbSchema == "" || dbTable == "" || startDate == "" || endDate == "" {
 			log.Println("Parâmetros de consulta ausentes na solicitação.")
 			http.Error(w, "Missing required query parameters", http.StatusBadRequest)
@@ -250,6 +256,20 @@ func queryFiltersHandler(db *ImmuDBClient) http.HandlerFunc {
 	}
 }
 
+// Middleware para adicionar cabeçalhos de CORS
+func corsMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
+}
+
 func main() {
 	log.Println("Iniciando servidor...")
 
@@ -257,11 +277,16 @@ func main() {
 	log.Printf("Configuração do ImmuDB: %+v", config)
 
 	dbClient := NewImmuDBClient(config)
-	http.HandleFunc("/api/audit-trail", queryAuditTrailHandler(dbClient))
-	http.HandleFunc("/api/filters", queryFiltersHandler(dbClient))
+
+	mux := http.NewServeMux()
+	mux.HandleFunc("/api/audit-trail", queryAuditTrailHandler(dbClient))
+	mux.HandleFunc("/api/filters", queryFiltersHandler(dbClient))
+
+	// Adiciona o middleware de CORS
+	handler := corsMiddleware(mux)
 
 	log.Println("Servidor iniciado na porta :5050")
-	if err := http.ListenAndServe(":5050", nil); err != nil {
+	if err := http.ListenAndServe(":5050", handler); err != nil {
 		log.Fatalf("Erro ao iniciar o servidor: %v", err)
 	}
 }
