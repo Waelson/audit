@@ -15,4 +15,6 @@ ALTER TABLE payments
 ALTER COLUMN payment_amount TYPE NUMERIC(15, 2) USING payment_amount::NUMERIC,
 ALTER COLUMN transaction_amount TYPE NUMERIC(15, 2) USING transaction_amount::NUMERIC;
 
+ALTER TABLE payments REPLICA IDENTITY FULL;
+
 CREATE PUBLICATION audit_changes FOR ALL TABLES;

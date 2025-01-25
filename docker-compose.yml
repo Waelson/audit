@@ -43,8 +43,8 @@ services:
       - immudb
     environment:
       KAFKA_BROKERS: "kafka:9092"
-      KAFKA_TOPIC: "event.public.payments"
-      KAFKA_CONSUMER_GROUP: "payment-consumer-group"
+      KAFKA_TOPIC: "audit-trail"
+      KAFKA_CONSUMER_GROUP: "audit-trail-group"
       IMMUD_HOST: "immudb"
       IMMUD_PORT: 3322
       IMMUD_USER: "immudb"
@@ -63,7 +63,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data_01:/var/lib/postgresql/data
+      - postgres_data_02:/var/lib/postgresql/data
       - ./projects/payment-api/init.sql:/docker-entrypoint-initdb.d/init.sql
     command: >
       postgres -c wal_level=logical
@@ -153,24 +153,10 @@ services:
     networks:
       - payment-network
 
-#  immugw:
-#    image: codenotary/immugw:latest
-#    container_name: immugw
-#    depends_on:
-#      - immudb
-#    ports:
-#      - "3323:3323"
-#    environment:
-#      IMMUDB_ADDRESS: immudb
-#      IMMUDB_PORT: 3322
-#      IMMUGW_IMMUDB_ADDRESS: immudb
-#      IMMUGW_IMMUDB_PORT: 3322
-#    networks:
-#      - payment-network
 
 networks:
   payment-network:
     driver: bridge
 
 volumes:
-  postgres_data_01:
+  postgres_data_02:
