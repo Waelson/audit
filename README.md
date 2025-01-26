@@ -97,7 +97,7 @@ curl --location 'http://localhost:8083/connectors' \
 
 5. **Acessar a UI de Consulta de Trilhas de Auditoria**
 - Digite a URL http://localhost:4000/ no browser.
-- Preencha os filtros, lembrando de que a única operação contemplada é `Create` e deploy clique no botão `Search`. 
+- Preencha os filtros, lembrando de que a única operação contemplada é `Create` e depois clique no botão `Search`. 
 
 ## Interface de Usuário
 
