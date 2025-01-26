@@ -12,6 +12,12 @@ O texto vem aqui
 
 
 ### Tecnnologias
+| **Categoria**       | **Ferramenta/Descrição**    |
+|---------------------|-----------------------------|
+| **Linguagem**       | Golang, JavaScript (NodeJS) |
+| **Bibliotecas**     | React                       |
+| **Banco de Dados**  | ImmuDB, Postgres            |
+| **Mensageria**      | Apache Kafka                |
 
 ## Instalação
 A aplicação está configurada para ser executada com Docker Compose. Siga os passos logo abaixo, mas assegure-se de ter os pré-requisitos instalados:
