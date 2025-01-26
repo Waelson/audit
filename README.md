@@ -39,7 +39,7 @@ cd audit
 docker-compose up --build
 ```
 
-3. **Criar o conector**
+3. **Cria o conector**
 
 ```bash
 curl --location 'http://localhost:8083/connectors' \
@@ -73,7 +73,13 @@ curl --location 'http://localhost:8083/connectors' \
 }
 ```
 
-4. **Acessa a aplicação**
+4. **Acessa o Simulador de Pagamento**
+- Digite a URL http://localhost:3000/ no browser.
+- Realize simulações de transações de pagamento de cartão de crédito clicando no botão `Pay`.
+
+5. **Acessa a UI de Consulta de Trilhas de Auditoria**
+- Digite a URL http://localhost:4000/ no browser.
+- Preencha os filtros, lembrando de que a única operação contemplada é `Create` e deploy clique no botão `Search`. 
 
 ## Interface de Usuário
 
