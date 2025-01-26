@@ -2,7 +2,12 @@
 
 ![Golang](https://img.shields.io/badge/technology-Golang-blue.svg)  ![Debezium](https://img.shields.io/badge/technology-Debezium-orange.svg) ![React](https://img.shields.io/badge/technology-React-green.svg)
 
-O texto vem aqui
+Este repositório contém a implementação de um sistema de auditoria de dados utilizando a técnica de Change Data Capture (CDC). O objetivo é capturar e registrar alterações realizadas em bancos de dados relacionais de forma transparente para a aplicação, oferecendo uma solução prática para auditoria e rastreamento de eventos.
+
+### Motivação
+
+Sistemas onde a rastreabilidade de dados é essencial, como ambientes financeiros, e-commerce, ou qualquer aplicação sujeita a regulamentações, a auditoria de alterações nos dados é uma necessidade crítica. Este projeto demonstra como o CDC pode ser integrado a uma arquitetura moderna para capturar, armazenar e consultar eventos de forma estruturada.
+
 
 ## Arquitetura
 
