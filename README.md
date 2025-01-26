@@ -97,12 +97,10 @@ curl --location 'http://localhost:8083/connectors' \
 
 ![audit](documentation/audit_trail_query.png)
 
-## 🧠 Teoria
+## Contribuições
 
-### 💡CDC - Change Data Capture
+Contribuições são bem-vindas! Sinta-se à vontade para abrir issues ou enviar pull requests com melhorias, correções ou novas funcionalidades.
 
-___
+## Licença
 
-#### O que é?
-
-#### Quais problemas ela ajuda a resolver?
+Este projeto está licenciado sob a Licença MIT.
