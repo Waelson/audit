@@ -23,6 +23,7 @@ O texto vem aqui
 A aplicação está configurada para ser executada com Docker Compose. Siga os passos logo abaixo, mas assegure-se de ter os pré-requisitos instalados:
 
 **Pré-requisitos:**
+- Docker
 - Go 1.21 ou superior
 - Node 20.12 ou superior (para executar projeto localmente)
 
