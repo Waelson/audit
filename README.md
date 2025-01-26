@@ -35,6 +35,38 @@ docker-compose up --build
 
 3. **Criar o conector**
 
+```bash
+curl --location 'http://localhost:8083/connectors' \
+--header 'Content-Type: application/json' \
+--data '{
+  "name": "postgres-connector",
+  "config": {
+    "connector.class": "io.debezium.connector.postgresql.PostgresConnector",
+    "database.hostname": "postgres",
+    "database.port": "5432",
+    "database.user": "postgres",
+    "database.password": "password",
+    "database.dbname": "payment_db",
+    "database.server.name": "payment-postgres",
+    "slot.name": "debezium_slot",
+    "plugin.name": "pgoutput",
+    "publication.name": "audit_events",
+    "database.history.kafka.bootstrap.servers": "kafka:9092",
+    "database.history.kafka.topic": "schema-changes.audit-trail",
+    "topic.prefix": "audit",
+    "table.include.list": "public.payments",
+    "transforms": "RouteToTopic,AddAppName",
+    "transforms.RouteToTopic.type": "org.apache.kafka.connect.transforms.RegexRouter",
+    "transforms.RouteToTopic.regex": "audit.public.payments",
+    "transforms.RouteToTopic.replacement": "audit-trail",
+    "decimal.handling.mode": "string",
+    "transforms.AddAppName.type": "org.apache.kafka.connect.transforms.InsertField$Value",
+    "transforms.AddAppName.static.field": "application",
+    "transforms.AddAppName.static.value": "payment-api"
+  }
+}
+```
+
 4. **Acessa a aplicação**
 
 ## Interface de Usuário
