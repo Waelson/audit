@@ -88,7 +88,7 @@ curl --location 'http://localhost:8083/connectors' \
     "transforms.AddAppName.static.field": "application",
     "transforms.AddAppName.static.value": "payment-api"
   }
-}
+}'
 ```
 
 4. **Acessar a UI de Simulação de Pagamentos**
