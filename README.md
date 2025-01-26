@@ -15,6 +15,18 @@ Sistemas onde a rastreabilidade de dados é essencial, como ambientes financeiro
 
 ### Componentes
 
+| **Componente**         | **Descrição**                                                                                                                              |
+|------------------------|--------------------------------------------------------------------------------------------------------------------------------------------|
+| **Payment UI**         | Interface gráfica (frontend) que permite ao usuário iniciar pagamentos.                                                                    |
+| **Payment API**        | Serviço de backend responsável por processar e registrar transações no banco de dados PostgreSQL.                                          |
+| **PostgreSQL**         | Banco de dados utilizado para armazenar os registros das transações.                                                                       |
+| **Debezium Connector** | Plataforma de Change Data Capture (CDC) que monitora o PostgreSQL por meio de seus arquivos WAL (Write-Ahead Logs) para capturar mudanças. |
+| **Kafka Cluster**      | Sistema de mensageria que recebe as alterações capturadas pelo Debezium e distribui mensagens para os consumidores.                        |
+| **Audit Consumer**     | Serviço que consome as mensagens do Kafka, realiza transformações nos dados e os insere no banco de dados ImmuDB.                          |
+| **ImmuDB**             | Banco de dados imutável utilizado para armazenar os registros de auditoria, garantindo integridade e rastreabilidade dos eventos.          |
+| **Audit API**          | Serviço de backend que expõe endpoints para consulta e acesso aos registros de auditoria armazenados no ImmuDB.                            |
+| **Audit UI**           | Interface gráfica (frontend) que permite a consulta e análise das trilhas de auditoria.                                                    |
+
 
 ### Tecnnologias
 | **Categoria**       | **Ferramenta/Descrição**    |
