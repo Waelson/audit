@@ -28,7 +28,7 @@ Sistemas onde a rastreabilidade de dados é essencial, como ambientes financeiro
 | **Audit UI**           | Interface gráfica (frontend) que permite a consulta e análise das trilhas de auditoria.                                                    |
 
 
-### Tecnnologias
+### Tecnologias
 | **Categoria**       | **Ferramenta/Descrição**    |
 |---------------------|-----------------------------|
 | **Linguagem**       | Golang, JavaScript (NodeJS) |
@@ -44,20 +44,20 @@ A aplicação está configurada para ser executada com Docker Compose. Siga os p
 - Go 1.21 ou superior
 - Node 20.12 ou superior (para executar projeto localmente)
 
-1. **Clona o repositório**
+1. **Clonar o repositório**
 
 ```bash
 git clone https://github.com/Waelson/audit.git
 cd audit
 ```
 
-2. **Inicializa a stack**
+2. **Inicializar a stack**
 
 ```bash
 docker-compose up --build
 ```
 
-3. **Cria o conector**
+3. **Criar o conector**
 
 ```bash
 curl --location 'http://localhost:8083/connectors' \
@@ -91,11 +91,11 @@ curl --location 'http://localhost:8083/connectors' \
 }
 ```
 
-4. **Acessa o Simulador de Pagamento**
+4. **Acessar o Simulador de Pagamento**
 - Digite a URL http://localhost:3000/ no browser.
 - Realize simulações de transações de pagamento de cartão de crédito clicando no botão `Pay`.
 
-5. **Acessa a UI de Consulta de Trilhas de Auditoria**
+5. **Acessar a UI de Consulta de Trilhas de Auditoria**
 - Digite a URL http://localhost:4000/ no browser.
 - Preencha os filtros, lembrando de que a única operação contemplada é `Create` e deploy clique no botão `Search`. 
 
