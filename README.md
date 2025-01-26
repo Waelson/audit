@@ -91,7 +91,7 @@ curl --location 'http://localhost:8083/connectors' \
 }
 ```
 
-4. **Acessar o Simulador de Pagamento**
+4. **Acessar a UI de Simulação de Pagamentos**
 - Digite a URL http://localhost:3000/ no browser.
 - Realize simulações de transações de pagamento de cartão de crédito clicando no botão `Pay`.
 
